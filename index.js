@@ -3,15 +3,18 @@ const violeta = document.getElementById("violeta");
 const naranja = document.getElementById("naranja");
 const verde = document.getElementById("verde");
 const btnEmpezar = document.getElementById("btnEmpezar");
+const ULTIMO_NIVEL = 10;
 
 class Juego {
   constructor() {
     this.inicializar();
     this.generarSecuencia();
-    this.siguienteNivel();
+    setTimeout(this.siguienteNivel(), 500);
   }
 
   inicializar() {
+    this.siguienteNivel = this.siguienteNivel.bind(this);
+    this.elegirColor = this.elegirColor.bind(this);
     btnEmpezar.classList.add("hide");
     this.nivel = 1;
     this.colores = {
@@ -23,13 +26,15 @@ class Juego {
   }
 
   generarSecuencia() {
-    this.secuencia = new Array(10)
+    this.secuencia = new Array(ULTIMO_NIVEL)
       .fill(0)
       .map((n) => Math.floor(Math.random() * 4));
   }
 
   siguienteNivel() {
+    this.subNivel = 0;
     this.iluminarSecuencia();
+    this.agregarEventosClick();
   }
 
   transformarNumeroAColor(numero) {
@@ -44,9 +49,21 @@ class Juego {
         return "verde";
     }
   }
+  transformarColorANumero(color) {
+    switch (color) {
+      case "celeste":
+        return 0;
+      case "violeta":
+        return 1;
+      case "naranja":
+        return 2;
+      case "verde":
+        return 3;
+    }
+  }
 
   iluminarSecuencia() {
-    // let mantiene la variable a diferencia de var que siempre pisa la misma variable, usar siempre conts antes que let y usar siepre let antes de var.
+    // let mantiene la variable a diferencia de var que siempre pisa la misma variable, usar siempre conts antes que let y usar siempre let antes de var.
     for (let i = 0; i < this.nivel; i++) {
       const color = this.transformarNumeroAColor(this.secuencia[i]);
       setTimeout(() => this.iluminarColor(color), 1000 * i);
@@ -60,6 +77,51 @@ class Juego {
 
   apagarColor(color) {
     this.colores[color].classList.remove("light");
+  }
+  agregarEventosClick() {
+    this.colores.celeste.addEventListener("click", this.elegirColor.bind(this));
+    this.colores.verde.addEventListener("click", this.elegirColor.bind(this));
+    this.colores.violeta.addEventListener("click", this.elegirColor.bind(this));
+    this.colores.naranja.addEventListener("click", this.elegirColor.bind(this));
+  }
+
+  eliminarEventosClick() {
+    this.colores.celeste.removeEventListener(
+      "click",
+      this.elegirColor.bind(this)
+    );
+    this.colores.verde.removeEventListener(
+      "click",
+      this.elegirColor.bind(this)
+    );
+    this.colores.violeta.removeEventListener(
+      "click",
+      this.elegirColor.bind(this)
+    );
+    this.colores.naranja.removeEventListener(
+      "click",
+      this.elegirColor.bind(this)
+    );
+  }
+
+  elegirColor(ev) {
+    const nombreColor = ev.target.dataset.color;
+    const numeroColor = this.transformarColorANumero(nombreColor);
+    this.iluminarColor(nombreColor);
+    if (numeroColor === this.secuencia[this.subNivel]) {
+      this.subNivel++;
+      if (this.subNivel === this.nivel) {
+        this.nivel++;
+        //this.eliminarEventosClick();
+        if (this.nivel === ULTIMO_NIVEL + 1) {
+          //Gano!
+        } else {
+          setTimeout(this.siguienteNivel.bind(this), 2500);
+        }
+      }
+    } else {
+      //Perdio
+    }
   }
 }
 
