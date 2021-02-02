@@ -3,19 +3,20 @@ const violeta = document.getElementById("violeta");
 const naranja = document.getElementById("naranja");
 const verde = document.getElementById("verde");
 const btnEmpezar = document.getElementById("btnEmpezar");
-const ULTIMO_NIVEL = 10;
+const ULTIMO_NIVEL = 3;
 
 class Juego {
   constructor() {
+    this.inicializar = this.inicializar.bind(this);
     this.inicializar();
     this.generarSecuencia();
-    setTimeout(this.siguienteNivel(), 500);
+    setTimeout(this.siguienteNivel, 500);
   }
 
   inicializar() {
     this.siguienteNivel = this.siguienteNivel.bind(this);
     this.elegirColor = this.elegirColor.bind(this);
-    btnEmpezar.classList.add("hide");
+    this.toggleBtnEmpezar();
     this.nivel = 1;
     this.colores = {
       celeste,
@@ -25,6 +26,14 @@ class Juego {
     };
   }
 
+  toggleBtnEmpezar() {
+    if (btnEmpezar.classList.contains("hide")) {
+      btnEmpezar.classList.remove("hide");
+    } else {
+      btnEmpezar.classList.add("hide");
+    }
+  }
+
   generarSecuencia() {
     this.secuencia = new Array(ULTIMO_NIVEL)
       .fill(0)
@@ -32,7 +41,7 @@ class Juego {
   }
 
   siguienteNivel() {
-    this.subNivel = 0;
+    this.subnivel = 0;
     this.iluminarSecuencia();
     this.agregarEventosClick();
   }
@@ -49,6 +58,7 @@ class Juego {
         return "verde";
     }
   }
+
   transformarColorANumero(color) {
     switch (color) {
       case "celeste":
@@ -63,7 +73,6 @@ class Juego {
   }
 
   iluminarSecuencia() {
-    // let mantiene la variable a diferencia de var que siempre pisa la misma variable, usar siempre conts antes que let y usar siempre let antes de var.
     for (let i = 0; i < this.nivel; i++) {
       const color = this.transformarNumeroAColor(this.secuencia[i]);
       setTimeout(() => this.iluminarColor(color), 1000 * i);
@@ -78,50 +87,52 @@ class Juego {
   apagarColor(color) {
     this.colores[color].classList.remove("light");
   }
+
   agregarEventosClick() {
-    this.colores.celeste.addEventListener("click", this.elegirColor.bind(this));
-    this.colores.verde.addEventListener("click", this.elegirColor.bind(this));
-    this.colores.violeta.addEventListener("click", this.elegirColor.bind(this));
-    this.colores.naranja.addEventListener("click", this.elegirColor.bind(this));
+    this.colores.celeste.addEventListener("click", this.elegirColor);
+    this.colores.verde.addEventListener("click", this.elegirColor);
+    this.colores.violeta.addEventListener("click", this.elegirColor);
+    this.colores.naranja.addEventListener("click", this.elegirColor);
   }
 
   eliminarEventosClick() {
-    this.colores.celeste.removeEventListener(
-      "click",
-      this.elegirColor.bind(this)
-    );
-    this.colores.verde.removeEventListener(
-      "click",
-      this.elegirColor.bind(this)
-    );
-    this.colores.violeta.removeEventListener(
-      "click",
-      this.elegirColor.bind(this)
-    );
-    this.colores.naranja.removeEventListener(
-      "click",
-      this.elegirColor.bind(this)
-    );
+    this.colores.celeste.removeEventListener("click", this.elegirColor);
+    this.colores.verde.removeEventListener("click", this.elegirColor);
+    this.colores.violeta.removeEventListener("click", this.elegirColor);
+    this.colores.naranja.removeEventListener("click", this.elegirColor);
   }
 
   elegirColor(ev) {
     const nombreColor = ev.target.dataset.color;
     const numeroColor = this.transformarColorANumero(nombreColor);
     this.iluminarColor(nombreColor);
-    if (numeroColor === this.secuencia[this.subNivel]) {
-      this.subNivel++;
-      if (this.subNivel === this.nivel) {
+    if (numeroColor === this.secuencia[this.subnivel]) {
+      this.subnivel++;
+      if (this.subnivel === this.nivel) {
         this.nivel++;
-        //this.eliminarEventosClick();
+        this.eliminarEventosClick();
         if (this.nivel === ULTIMO_NIVEL + 1) {
-          //Gano!
+          this.ganoElJuego();
         } else {
-          setTimeout(this.siguienteNivel.bind(this), 2500);
+          setTimeout(this.siguienteNivel, 1500);
         }
       }
     } else {
-      //Perdio
+      this.perdioElJuego();
     }
+  }
+
+  ganoElJuego() {
+    swal("Platzi", "Felicitaciones, ganaste el juego!", "success").then(
+      this.inicializar
+    );
+  }
+
+  perdioElJuego() {
+    swal("Platzi", "Lo lamentamos, perdiste :(", "error").then(() => {
+      this.eliminarEventosClick();
+      this.inicializar();
+    });
   }
 }
 
